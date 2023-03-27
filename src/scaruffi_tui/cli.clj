@@ -3,8 +3,8 @@
 
 (defn check_input
   [row_length]
-  (loop [not_correct true]
-    (when not_correct
-      (println "Enter your input:")
-      (let [user_input (edn/read-string (read-line))]
-        (recur (not (and (integer? user_input) (< user_input row_length))))))))
+  (loop []
+    (println "Enter your input:")
+    (let [in (edn/read-string (read-line))]
+      (cond (not (and (integer? in) (< in row_length))) (recur)
+            :else in))))

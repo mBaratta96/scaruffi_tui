@@ -17,11 +17,17 @@
 
 (defn get_table
   []
-  (s/select (s/and (s/descendant (s/and (s/tag :table)
-                                        (s/attr :width #(= % "700")))
-                                 (s/tag :li))
-                   (s/has-child (s/tag :ol)))
-            (parse_page scaruffi_home)))
+  (first (s/select (s/descendant (s/and (s/tag :table)
+                                        (s/attr :width #(= % "700"))))
+                   (parse_page scaruffi_home))))
+
+(defn get_section_headers
+  [table]
+  (s/select (s/and (s/descendant (s/tag :li)) (s/has-child (s/tag :ol))) table))
+
+(defn get_section_content
+  [rows]
+  (map #(s/select (s/descendant (s/tag :ol) (s/tag :li) (s/tag :a)) %) rows))
 
 (defn get_own_text
   [el]

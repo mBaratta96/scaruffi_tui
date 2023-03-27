@@ -1,19 +1,17 @@
 (ns scaruffi-tui.core
   (:gen-class)
   (:require [clj-http.client :as client])
-  (:use [hickory.core :only [parse as-hickory]])
+  (:require [hickory.core :refer [parse as-hickory]])
   (:require [hickory.select :as s])
   (:require [clojure.string :as string]))
 
-(defn print_greeting [greeting] (fn [who] (println greeting who)))
-
-(defn get_website [link] (client/get link))
+(defn get_page [link] (client/get link))
 
 (def scaruffi_home "https://scaruffi.com/history/long.html")
 
 (defn parse_website
   []
-  (-> (get_website scaruffi_home)
+  (-> (get_page scaruffi_home)
       :body
       parse
       as-hickory))
@@ -27,6 +25,10 @@
             (parse_website)))
 
 (defn -main
-  ([& args]
+  ([]
    (let [rows (get_table)]
-     (doseq [el rows] (println (string/trim (first (:content el))))))))
+     (doseq [el rows]
+       (println (-> el
+                    :content
+                    first
+                    string/trim))))))

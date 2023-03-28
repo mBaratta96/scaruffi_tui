@@ -1,10 +1,10 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]))
 
-(defn check_input
-  [row_length]
+(defn check-input
+  [row-length]
   (loop []
     (println "Enter your input:")
     (let [in (edn/read-string (read-line))]
-      (cond (not (and (integer? in) (< in row_length))) (recur)
+      (cond (not (and (integer? in) (< in row-length))) (recur)
             :else in))))

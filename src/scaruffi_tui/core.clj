@@ -23,7 +23,13 @@
   ([]
    (let [chapter-page (navigate-home)
          table (scraper/get-table chapter-page)
-         headers (scraper/get-chapter-headers table)
+         ; headers (scraper/get-chapter-headers table)
          indexes (scraper/get-dir-indexes table)]
-     (print-options headers)
-     (doseq [content (:content indexes)] (println "CONTENT:" content)))))
+     ;(print-options headers)
+     (doseq [[i paragraphs] (map-indexed vector (cli/create-section indexes))]
+       (println "SECTION:" i)
+       (doseq [paragraph paragraphs]
+         (println (scraper/get-internal-text paragraph)))))))
+       ;(println "PARAGRAPHS:" paragraphs)
+       ;(println (reduce #(str %1 (scraper/get-own-text %2)) ""
+       ;paragraphs))))))

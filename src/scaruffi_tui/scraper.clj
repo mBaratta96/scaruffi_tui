@@ -1,7 +1,7 @@
 (ns scaruffi-tui.scraper
   (:require [clojure.string :as string]
             [clj-http.client :as client]
-            [hickory.core :refer [parse as-hickory]]
+            [hickory.core :refer [parse as-hickory as-hiccup]]
             [hickory.select :as s]))
 
 (defn get-page [link] (client/get link))
@@ -35,15 +35,18 @@
   [table]
   (s/select (s/or (s/descendant (s/tag :h4) (s/tag :i))
                   (s/descendant (s/and (s/tag :h4)
-                                       (s/not (s/has-child (s/tag :i))))))
+                                       (s/not (s/has-child (s/tag :i)))))
+                  (s/descendant (s/tag :p)))
             table))
 
 (defn get-dir-indexes
   [table]
-  (first (s/select (s/descendant (s/and (s/tag :dir)
-                                        (s/not (s/has-child (s/tag :dir)))
-                                        (s/not (s/has-child (s/tag :ol)))))
-                   table)))
+  (-> (s/select (s/descendant (s/and (s/tag :dir)
+                                     (s/not (s/has-child (s/tag :dir)))
+                                     (s/not (s/has-child (s/tag :ol)))))
+                table)
+      first
+      get-chapter-headers))
 
 (defn get-own-text
   [el]
@@ -57,3 +60,16 @@
   (-> el
       :attrs
       :href))
+
+(defn get-internal-text
+  [el]
+  (let [content (:content el)]
+    (string/trim-newline
+     (string/join " "
+                  (map #(cond (:type %) (cond (some? (:content %))
+                                              (string/upper-case
+                                               (first (:content %)))
+                                              :else "\n\n")
+                              (= % "\n") "\n"
+                              :else (string/trim (string/replace % "\n" " ")))
+                       content)))))

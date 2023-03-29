@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [hickory "0.7.1"]
                  [clj-http "3.12.3"]
-                 [mvxcvi/puget "1.3.4"]]
+                 [clojure-term-colors "0.1.0"]]
   :main ^:skip-aot scaruffi-tui.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all,

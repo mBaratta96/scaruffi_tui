@@ -22,10 +22,14 @@
         indexes (scraper/get-dir-indexes table)
         headers (cli/get-page-headers indexes)
         sections (cli/create-section indexes)]
-    (doseq [[i paragraphs] (map-indexed vector sections)]
-      (cli/print-header (nth headers i))
-      (doseq [paragraph paragraphs]
-        (println (cli/get-internal-text paragraph) "\n")))))
+    (cli/print-options headers)
+    (let [index (cli/check-input (count headers))
+          section (nth sections index)
+          header (nth headers index)]
+      (cli/clear-console)
+      (cli/print-header header)
+      (doseq [parapgraph section]
+        (println (cli/get-internal-text parapgraph) "\n")))))
 
 (defn -main
   ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))

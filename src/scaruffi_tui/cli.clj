@@ -1,6 +1,7 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clojure.term.colors :as color]))
 
 (defn check-input
   [row-length]
@@ -38,21 +39,29 @@
   [el]
   (let [content (:content el)]
     (string/trim-newline
-     (string/join " "
-                  (map #(cond (:type %) (cond (some? (:content %))
-                                              (string/upper-case
-                                               (first (:content %)))
-                                              :else "\n\n")
-                              :else (string/trim (string/replace % "\n" " ")))
-                       content)))))
+     (string/join
+      " "
+      (map #(cond (:type %) (cond (some? (:content %))
+                                  (let [tag (:tag %)
+                                        content (string/trim
+                                                 (first (:content %)))]
+                                    (cond (= :a tag) (color/underline
+                                                      (color/blue content))
+                                          (= :i tag) (color/green content)
+                                          (= :b tag) (color/bold content)
+                                          :else "")))
+                  :else (string/trim (string/replace % "\n" " ")))
+           content)))))
 
 (defn clear-console [] (print "\033\143"))
 
 (defn print-header
   [header]
-  (println (string/upper-case (get-own-text header)) "\n"))
+  (println (color/yellow (string/upper-case (get-own-text header)) "\n")))
 
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
-    (println (format "%d. %s" i (get-own-text row)))))
+    (println (color/bold (format "%s. %s"
+                                 (color/cyan i)
+                                 (color/bold (get-own-text row)))))))

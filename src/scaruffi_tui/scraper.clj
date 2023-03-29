@@ -1,7 +1,6 @@
 (ns scaruffi-tui.scraper
-  (:require [clojure.string :as string]
-            [clj-http.client :as client]
-            [hickory.core :refer [parse as-hickory as-hiccup]]
+  (:require [clj-http.client :as client]
+            [hickory.core :refer [parse as-hickory]]
             [hickory.select :as s]))
 
 (defn get-page [link] (client/get link))
@@ -48,28 +47,8 @@
       first
       get-chapter-headers))
 
-(defn get-own-text
-  [el]
-  (-> el
-      :content
-      first
-      string/trim))
-
 (defn get-link
   [el]
   (-> el
       :attrs
       :href))
-
-(defn get-internal-text
-  [el]
-  (let [content (:content el)]
-    (string/trim-newline
-     (string/join " "
-                  (map #(cond (:type %) (cond (some? (:content %))
-                                              (string/upper-case
-                                               (first (:content %)))
-                                              :else "\n\n")
-                              (= % "\n") "\n"
-                              :else (string/trim (string/replace % "\n" " ")))
-                       content)))))

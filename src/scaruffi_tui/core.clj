@@ -6,7 +6,7 @@
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
-    (println (format "%d. %s" i (scraper/get-own-text row)))))
+    (println (format "%d. %s" i (cli/get-own-text row)))))
 
 (defn navigate-home
   []
@@ -15,8 +15,10 @@
         sections (scraper/get-section-content rows)]
     (print-options rows)
     (let [section (nth sections (cli/check-input (count rows)))]
+      (cli/clear-console)
       (print-options section)
       (let [chapter (nth section (cli/check-input (count section)))]
+        (cli/clear-console)
         (scraper/get-link chapter)))))
 
 (defn -main
@@ -29,7 +31,7 @@
      (doseq [[i paragraphs] (map-indexed vector (cli/create-section indexes))]
        (println "SECTION:" i)
        (doseq [paragraph paragraphs]
-         (println (scraper/get-internal-text paragraph)))))))
+         (println (cli/get-internal-text paragraph) "\n"))))))
        ;(println "PARAGRAPHS:" paragraphs)
        ;(println (reduce #(str %1 (scraper/get-own-text %2)) ""
        ;paragraphs))))))

@@ -29,7 +29,6 @@
                                  (some? (:content (second %)))
                                  (> (count (:content (second %))) 1))
                            indexed_page)]
-    (println bounds)
     (partition-by #(get-upper-bound bounds (first %)) paragraphs)))
 
 (defn get-own-text
@@ -41,7 +40,7 @@
 
 (defn get-internal-text
   [el]
-  (let [content (:content el)]
+  (let [content (:content (second el))]
     (string/trim-newline
      (string/join
       " "

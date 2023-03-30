@@ -29,7 +29,7 @@
       (cli/clear-console)
       (cli/print-header header)
       (doseq [parapgraph section]
-        (println (cli/get-internal-text (second parapgraph)) "\n")))))
+        (println (cli/get-internal-text parapgraph) "\n")))))
 
 (defn -main
   ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))

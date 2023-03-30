@@ -18,8 +18,9 @@
 (defn get-table
   ([] (get-table scaruffi-home))
   ([page]
-   (first (s/select (s/descendant (s/and (s/tag :table)
-                                         (s/attr :width #(= % "700"))))
+   (first (s/select (s/descendant
+                     (s/and (s/tag :table)
+                            (s/attr :width #(>= (Integer/parseInt %) 700))))
                     (parse-page (str scaruffi-url page))))))
 
 (defn get-section-headers

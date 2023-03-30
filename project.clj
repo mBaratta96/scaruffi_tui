@@ -9,4 +9,15 @@
                  [clojure-term-colors "0.1.0"]]
   :main scaruffi-tui.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :aliases {"native"
+            ["shell"
+             "native-image"
+             "--report-unsupported-elements-at-runtime"
+             "--initialize-at-build-time"
+             "--no-server"
+             "-jar"
+             "./target/uberjar/scaruffi_tui-0.1.0-SNAPSHOT-standalone.jar"
+             "-H:Name=./target/scaruffi"
+             "--diagnostics-mode"
+             "--enable-url-protocols=https"]}
+  :profiles {:uberjar {:aot :all}, :dev {:plugins [[lein-shell "0.5.0"]]}})

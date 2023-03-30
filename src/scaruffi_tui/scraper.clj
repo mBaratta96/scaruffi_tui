@@ -1,5 +1,5 @@
 (ns scaruffi-tui.scraper
-  (:require [clj-http.client :as client]
+  (:require [clj-http.lite.client :as client]
             [hickory.core :refer [parse as-hickory]]
             [hickory.select :as s]))
 

@@ -15,18 +15,22 @@
   [page]
   (filter #(or (= :h4 (:tag %)) (= :i (:tag %))) page))
 
+(defn get-indexed-page-headers
+  [page]
+  (filter #(or (= :h4 (:tag (second %))) (= :i (:tag (second %)))) page))
+
 (defn get-upper-bound [bounds el] (last (filter #(< % el) bounds)))
 
 (defn create-section
   [page]
-  (let [bounds (map #(.indexOf page %) (get-page-headers page))
-        paragraphs (filter #(and (= :p (:tag %))
-                                 (some? (:content %))
-                                 (> (count (:content %)) 1))
-                           page)]
-    ;;(println bounds)
-    ;;(println (map #(get-upper-bound bounds (.indexOf page %)) paragraphs))
-    (partition-by #(get-upper-bound bounds (.indexOf page %)) paragraphs)))
+  (let [indexed_page (map-indexed vector page)
+        bounds (map #(first %) (get-indexed-page-headers indexed_page))
+        paragraphs (filter #(and (= :p (:tag (second %)))
+                                 (some? (:content (second %)))
+                                 (> (count (:content (second %))) 1))
+                           indexed_page)]
+    (println bounds)
+    (partition-by #(get-upper-bound bounds (first %)) paragraphs)))
 
 (defn get-own-text
   [el]

@@ -23,12 +23,12 @@
 
 (defn create-section
   [page]
-  (let [indexed_page (map-indexed vector page)
-        bounds (map #(first %) (get-indexed-page-headers indexed_page))
+  (let [indexed-page (map-indexed vector page)
+        bounds (map #(first %) (get-indexed-page-headers indexed-page))
         paragraphs (filter #(and (= :p (:tag (second %)))
                                  (some? (:content (second %)))
                                  (> (count (:content (second %))) 1))
-                           indexed_page)]
+                           indexed-page)]
     (partition-by #(get-upper-bound bounds (first %)) paragraphs)))
 
 (defn get-own-text
@@ -42,19 +42,30 @@
   [el]
   (let [content (:content (second el))]
     (string/trim-newline
-     (string/join
-      " "
-      (map #(cond (:type %) (cond (some? (:content %))
-                                  (let [tag (:tag %)
-                                        content (string/trim
-                                                 (first (:content %)))]
-                                    (cond (= :a tag) (color/underline
-                                                      (color/blue content))
-                                          (= :i tag) (color/green content)
-                                          (= :b tag) (color/bold content)
-                                          :else "")))
-                  :else (string/trim (string/replace % "\n" " ")))
-           content)))))
+     (string/join " "
+                  (map #(if (:type %)
+                          (if (some? (:content %))
+                            (let [tag (:tag %)
+                                  content (string/trim (first (:content %)))]
+                              (cond (= :a tag) (color/underline (color/blue
+                                                                 content))
+                                    (= :i tag) (color/green content)
+                                    (= :b tag) (color/bold content)
+                                    :else "")))
+                          (string/trim (string/replace % #"\s" " ")))
+                       content)))))
+
+(def base-url "https://scaruffi.com")
+
+(defn get-links
+  [el]
+  (let [content (:content (second el))]
+    (string/join "\n"
+                 (map #(format "%64s: %s"
+                               (color/yellow (first (:content %)))
+                               (str base-url (subs (:href (:attrs %)) 2)))
+                      (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
+                              content)))))
 
 (defn clear-console [] (print "\033\143"))
 

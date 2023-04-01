@@ -1,7 +1,8 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [clojure.term.colors :as color]))
+            [clojure.term.colors :as color]
+            [io.aviso.ansi :refer [compose]]))
 
 (defn check-input
   [row-length]
@@ -11,20 +12,26 @@
       (cond (not (and (integer? in) (< in row-length))) (recur)
             :else in))))
 
-(defn get-page-headers
-  [page]
-  (filter #(or (= :h4 (:tag %)) (= :i (:tag %))) page))
+(defprotocol Page-Headers
+  (get-page-headers [this]))
 
-(defn get-indexed-page-headers
-  [page]
-  (filter #(or (= :h4 (:tag (second %))) (= :i (:tag (second %)))) page))
+(defrecord Page [page]
+  Page-Headers
+  (get-page-headers [this]
+    (filter #(or (= :h4 (:tag %)) (= :i (:tag %))) (:page this))))
+
+(defrecord Indexed-Page [page]
+  Page-Headers
+  (get-page-headers [this]
+    (filter #(or (= :h4 (:tag (second %))) (= :i (:tag (second %))))
+            (:page this))))
 
 (defn get-upper-bound [bounds el] (last (filter #(< % el) bounds)))
 
 (defn create-section
   [page]
   (let [indexed-page (map-indexed vector page)
-        bounds (map #(first %) (get-indexed-page-headers indexed-page))
+        bounds (map #(first %) (get-page-headers (Indexed-Page. indexed-page)))
         paragraphs (filter #(and (= :p (:tag (second %)))
                                  (some? (:content (second %)))
                                  (> (count (:content (second %))) 1))
@@ -47,10 +54,10 @@
                           (if (some? (:content %))
                             (let [tag (:tag %)
                                   content (string/trim (first (:content %)))]
-                              (cond (= :a tag) (color/underline (color/blue
-                                                                 content))
-                                    (= :i tag) (color/green content)
-                                    (= :b tag) (color/bold content)
+                              (cond (= :a tag) (compose [:bright-blue content])
+                                    (= :i tag) (compose [:green.italic
+                                                         content])
+                                    (= :b tag) (compose [:yellow.bold content])
                                     :else "")))
                           (string/trim (string/replace % #"\s" " ")))
                        content)))))
@@ -62,7 +69,7 @@
   (let [content (:content (second el))]
     (string/join "\n"
                  (map #(format "%64s: %s"
-                               (color/yellow (first (:content %)))
+                               (compose [:blue (first (:content %))])
                                (str base-url (subs (:href (:attrs %)) 2)))
                       (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
                               content)))))
@@ -71,11 +78,9 @@
 
 (defn print-header
   [header]
-  (println (color/yellow (string/upper-case (get-own-text header)) "\n")))
+  (println (compose [:red (string/upper-case (get-own-text header))] "\n")))
 
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
-    (println (color/bold (format "%s. %s"
-                                 (color/cyan i)
-                                 (color/bold (get-own-text row)))))))
+    (println (compose [:bold [:cyan i ". "] (get-own-text row)]))))

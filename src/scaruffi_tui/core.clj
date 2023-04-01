@@ -1,7 +1,9 @@
 (ns scaruffi-tui.core
   (:gen-class)
   (:require [scaruffi-tui.scraper :as scraper]
-            [scaruffi-tui.cli :as cli]))
+            [scaruffi-tui.cli :as cli])
+  (:import [scaruffi_tui.cli Page]))
+
 (set! *warn-on-reflection* true)
 (defn navigate-home
   []
@@ -20,7 +22,7 @@
   [page]
   (let [table (scraper/get-table page)
         indexes (scraper/get-dir-indexes table)
-        headers (cli/get-page-headers indexes)
+        headers (cli/get-page-headers (Page. indexes))
         sections (cli/create-section indexes)]
     (cli/print-options headers)
     (let [index (cli/check-input (count headers))

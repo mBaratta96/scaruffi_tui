@@ -20,7 +20,7 @@
   ([page]
    (first (s/select (s/descendant
                      (s/and (s/tag :table)
-                            (s/attr :width #(>= (Integer/parseInt %) 700))))
+                            (s/attr :width #(> (Integer/parseInt %) 600))))
                     (parse-page (str scaruffi-url page))))))
 
 (defn get-section-headers

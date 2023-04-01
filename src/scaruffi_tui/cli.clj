@@ -1,7 +1,7 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [clojure.term.colors :as color]
+            [io.aviso.columns :as columns]
             [io.aviso.ansi :refer [compose]]))
 
 (defn check-input
@@ -66,13 +66,17 @@
 
 (defn get-links
   [el]
-  (let [content (:content (second el))]
-    (string/join "\n"
-                 (map #(format "%64s: %s"
-                               (compose [:blue (first (:content %))])
-                               (str base-url (subs (:href (:attrs %)) 2)))
-                      (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
-                              content)))))
+  (let [content (:content (second el))
+        links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
+                      content)
+        name-links (for [c links]
+                     {:name (compose [:blue.italic (first (:content c))]),
+                      :link (str base-url (subs (:href (:attrs c)) 2))})
+        formatter (columns/format-columns
+                   [:right (columns/max-value-length name-links :name)]
+                   ": "
+                   [:left (columns/max-value-length name-links :link)])]
+    (columns/write-rows formatter [:name :link] name-links)))
 
 (defn clear-console [] (print "\033\143"))
 

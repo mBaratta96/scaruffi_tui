@@ -31,9 +31,10 @@
       (cli/clear-console)
       (cli/print-header header)
       (doseq [parapgraph section]
-        (let [links (cli/get-links parapgraph)
-              full-text (cli/get-internal-text parapgraph)]
-          (println full-text "\n" links "\n"))))))
+        (let [full-text (cli/get-internal-text parapgraph)]
+          (println full-text)
+          (cli/get-links parapgraph)
+          (print "\n"))))))
 
 (defn -main
   ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))

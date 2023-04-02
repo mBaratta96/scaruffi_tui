@@ -30,11 +30,7 @@
           header (nth headers index)]
       (cli/clear-console)
       (cli/print-header header)
-      (doseq [parapgraph section]
-        (let [full-text (cli/get-internal-text parapgraph)]
-          (println full-text)
-          (cli/get-links parapgraph)
-          (print "\n"))))))
+      (cli/print-paragraphs section))))
 
 (defn -main
   ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))

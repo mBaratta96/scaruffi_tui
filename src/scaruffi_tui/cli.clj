@@ -1,8 +1,7 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [io.aviso.columns :as columns]
-            [io.aviso.ansi :refer [compose]]))
+            [io.aviso.columns :as columns]))
 
 (defn check-input
   [row-length]
@@ -45,6 +44,41 @@
       first
       string/trim))
 
+(def ANSI-CODES
+  {:reset "[0m",
+   :blue "[34m",
+   :red "[31m",
+   :green "[32m",
+   :yellow "[33m",
+   :cyan "[36m",
+   :underline "[4m",
+   :bold "[1m",
+   :italic "[3m"})
+(defn ansi [code] (str \u001b (get ANSI-CODES code (:reset ANSI-CODES))))
+(defn style [s & codes] (str (apply str (map ansi codes)) s (ansi :reset)))
+(defprotocol Color
+  (colorize [this]))
+(defrecord Link [s]
+  Color
+  (colorize [this] (style (:s this) :blue :underline)))
+(defrecord Song [s]
+  Color
+  (colorize [this] (style (:s this) :green :italic)))
+(defrecord Album [s]
+  Color
+  (colorize [this] (style (:s this) :yellow :bold)))
+(defrecord BandName [s]
+  Color
+  (colorize [this] (style (:s this) :blue :italic)))
+(defrecord Header [s]
+  Color
+  (colorize [this] (style (:s this) :red :bold)))
+(defrecord Option [index s]
+  Color
+  (colorize [this]
+    (str (style (str (:index this) ". ") :cyan :bold)
+         (style (:s this) :bold))))
+
 (defn get-internal-text
   [el]
   (let [content (:content (second el))]
@@ -54,10 +88,9 @@
                           (if (some? (:content %))
                             (let [tag (:tag %)
                                   content (string/trim (first (:content %)))]
-                              (cond (= :a tag) (compose [:bright-blue content])
-                                    (= :i tag) (compose [:green.italic
-                                                         content])
-                                    (= :b tag) (compose [:yellow.bold content])
+                              (cond (= :a tag) (colorize (Link. content))
+                                    (= :i tag) (colorize (Song. content))
+                                    (= :b tag) (colorize (Album. content))
                                     :else "")))
                           (string/trim (string/replace % #"\s" " ")))
                        content)))))
@@ -70,7 +103,7 @@
         links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
                       content)
         name-links (for [c links]
-                     {:name (compose [:blue.italic (first (:content c))]),
+                     {:name (colorize (BandName. (first (:content c)))),
                       :link (str base-url (subs (:href (:attrs c)) 2))})
         formatter (columns/format-columns
                    [:right (columns/max-value-length name-links :name)]
@@ -82,9 +115,18 @@
 
 (defn print-header
   [header]
-  (println (compose [:red (string/upper-case (get-own-text header))] "\n")))
+  (let [header-string (string/upper-case (get-own-text header))]
+    (println (colorize (Header. header-string)) "\n")))
 
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
-    (println (compose [:bold [:cyan i ". "] (get-own-text row)]))))
+    (println (colorize (Option. i (get-own-text row))))))
+
+(defn print-paragraphs
+  [paragraphs]
+  (doseq [parapgraph paragraphs]
+    (let [full-text (get-internal-text parapgraph)]
+      (println full-text)
+      (get-links parapgraph)
+      (print "\n"))))

@@ -5,8 +5,7 @@
 
 (defn get-page [link] (client/get link))
 
-(def scaruffi-url "https://scaruffi.com/history/")
-(def scaruffi-home "long.html")
+(def ^:private ^:const SCARUFFI-URL "https://scaruffi.com/history/")
 
 (defn parse-page
   [page]
@@ -16,18 +15,17 @@
       as-hickory))
 
 (defn get-table
-  ([] (get-table scaruffi-home))
   ([page]
    (first (s/select (s/descendant
                      (s/and (s/tag :table)
                             (s/attr :width #(> (Integer/parseInt %) 600))))
-                    (parse-page (str scaruffi-url page))))))
+                    (parse-page (str SCARUFFI-URL page))))))
 
 (defn get-section-headers
   [table]
   (s/select (s/and (s/descendant (s/tag :li)) (s/has-child (s/tag :ol))) table))
 
-(defn get-section-content
+(defn get-rows-content
   [rows]
   (map #(s/select (s/descendant (s/tag :ol) (s/tag :li) (s/tag :a)) %) rows))
 
@@ -39,7 +37,7 @@
                   (s/descendant (s/tag :p)))
             table))
 
-(defn get-dir-indexes
+(defn get-page-content
   [table]
   (-> (s/select (s/descendant (s/and (s/tag :dir)
                                      (s/not (s/has-child (s/tag :dir)))
@@ -53,3 +51,17 @@
   (-> el
       :attrs
       :href))
+
+(def ^:private ^:const SCARUFFI-HOME "long.html")
+
+(defn get-homepage-rows
+  []
+  (-> SCARUFFI-HOME
+      get-table
+      get-section-headers))
+
+(defn get-chapter
+  [page]
+  (-> page
+      get-table
+      get-page-content))

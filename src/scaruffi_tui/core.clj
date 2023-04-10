@@ -1,15 +1,15 @@
 (ns scaruffi-tui.core
   (:gen-class)
   (:require [scaruffi-tui.scraper :as scraper]
-            [scaruffi-tui.cli :as cli])
-  (:import [scaruffi_tui.cli Page]))
+            [scaruffi-tui.cli :as cli]
+            [scaruffi-tui.data :as data]))
 
 (set! *warn-on-reflection* true)
+
 (defn navigate-home
   []
-  (let [table (scraper/get-table)
-        rows (scraper/get-section-headers table)
-        sections (scraper/get-section-content rows)]
+  (let [rows (scraper/get-homepage-rows)
+        sections (scraper/get-rows-content rows)]
     (cli/print-options rows)
     (let [section (nth sections (cli/check-input (count rows)))]
       (cli/clear-console)
@@ -20,10 +20,9 @@
 
 (defn navigate-page
   [page]
-  (let [table (scraper/get-table page)
-        indexes (scraper/get-dir-indexes table)
-        headers (cli/get-page-headers (Page. indexes))
-        sections (cli/create-section indexes)]
+  (let [content (scraper/get-chapter page)
+        headers (data/get-page-headers content)
+        sections (data/create-section content)]
     (cli/print-options headers)
     (let [index (cli/check-input (count headers))
           section (nth sections index)

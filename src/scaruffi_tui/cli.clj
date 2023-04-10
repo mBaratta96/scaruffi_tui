@@ -52,7 +52,8 @@
                                   (= :b tag) ((:album COLOR-TYPES) content)
                                   :else ""))
                           (string/trim (string/replace % #"\s" " ")))
-                       content)))))
+                       (filter #(not (and (:type %) (nil? (:content %))))
+                               content))))))
 
 (def ^:private ^:const BASE-URL "https://scaruffi.com")
 

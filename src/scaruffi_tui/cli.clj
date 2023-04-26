@@ -39,21 +39,25 @@
    :option (fn [index s]
              (str (style (str index ". ") :cyan :bold) (style s :bold)))})
 
+(defn color-text
+  [el]
+  (let [tag (:tag el)
+        content (string/trim (first (:content el)))]
+    (cond (= :a tag) ((:link COLOR-TYPES) content)
+          (= :i tag) ((:song COLOR-TYPES) content)
+          (= :b tag) ((:album COLOR-TYPES) content)
+          :else "")))
+
 (defn get-internal-text
   [el]
   (let [content (:content (second el))]
-    (string/trim-newline
-     (string/join " "
-                  (map #(if (and (:type %) (some? (:content %)))
-                          (let [tag (:tag %)
-                                content (string/trim (first (:content %)))]
-                            (cond (= :a tag) ((:link COLOR-TYPES) content)
-                                  (= :i tag) ((:song COLOR-TYPES) content)
-                                  (= :b tag) ((:album COLOR-TYPES) content)
-                                  :else ""))
-                          (string/trim (string/replace % #"\s" " ")))
-                       (filter #(not (and (:type %) (nil? (:content %))))
-                               content))))))
+    (string/trim-newline (string/join
+                          " "
+                          (map #(if (and (:type %) (some? (:content %)))
+                                  (color-text %)
+                                  (string/trim (string/replace % #"\s" " ")))
+                               (filter #(not (and (:type %) (nil? (:content %))))
+                                       content))))))
 
 (def ^:private ^:const BASE-URL "https://scaruffi.com")
 

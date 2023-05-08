@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [hickory "0.7.1"]
                  [org.clj-commons/clj-http-lite "1.0.13"]
-                 [io.aviso/pretty "1.4"]]
+                 [io.aviso/pretty "1.4.2"]]
   :main scaruffi-tui.core
   :target-path "target/%s"
   :aliases {"native"

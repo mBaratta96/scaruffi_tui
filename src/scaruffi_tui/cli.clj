@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
             [io.aviso.columns :as columns]
+            [io.aviso.ansi :refer [compose]]
             [scaruffi-tui.data :as data]))
 
 (defn check-input
@@ -12,32 +13,15 @@
       (cond (not (and (integer? in) (< in row-length))) (recur)
             :else in))))
 
-(def ^:private ^:const ANSI-CODES
-  {:reset "[0m",
-   :blue "[34m",
-   :red "[31m",
-   :green "[32m",
-   :yellow "[33m",
-   :cyan "[36m",
-   :underline "[4m",
-   :bold "[1m",
-   :italic "[3m"})
-
-(defn ^:private ansi
-  [code]
-  (str \u001b (get ANSI-CODES code (:reset ANSI-CODES))))
-(defn ^:private style
-  [s & codes]
-  (str (apply str (map ansi codes)) s (ansi :reset)))
-
 (def ^:private ^:const COLOR-TYPES
-  {:link (fn [s] (style s :blue :underline)),
-   :song (fn [s] (style s :green :italic)),
-   :album (fn [s] (style s :yellow :bold)),
-   :band-name (fn [s] (style s :blue :italic)),
-   :header (fn [s] (style s :red :bold)),
+  {:link (fn [s] (compose [:blue.underlined s])),
+   :song (fn [s] (compose [:green.italic s])),
+   :album (fn [s] (compose [:yellow.bold s])),
+   :band-name (fn [s] (compose [:blue.italic s])),
+   :header (fn [s] (compose [:red.bold s])),
    :option (fn [index s]
-             (str (style (str index ". ") :cyan :bold) (style s :bold)))})
+             (str (compose [:cyan.bold (str index ". ")])
+                  (compose [:bold s])))})
 
 (defn color-text
   [el]

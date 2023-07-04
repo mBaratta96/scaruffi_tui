@@ -22,3 +22,9 @@ lein native
 ## Usage
 
 Use `lein run` or build it and use `scaruffi_tui`
+
+## Screenshots
+
+![1](./doc/1688471016.png)
+
+![2](./doc/1688471032.png)

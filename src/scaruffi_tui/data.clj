@@ -7,7 +7,7 @@
                     page))})
 
 (defn get-page-headers
-  ([page] ((:no-index GET-PAGE-HEADERS-METHODS) page))
+  ([page] ((get GET-PAGE-HEADERS-METHODS :no-index) page))
   ([page method] ((get GET-PAGE-HEADERS-METHODS method) page)))
 
 (defn get-upper-bound [bounds el] (last (filter #(< % el) bounds)))

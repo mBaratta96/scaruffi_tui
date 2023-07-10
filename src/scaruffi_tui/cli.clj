@@ -107,10 +107,17 @@
     (println ((:option COLOR-TYPES) i name))))
 
 (defn print-artist
-  [artist-page]
-  (let [text (map #(if (:type %)
-                     (trim-paragraph (get-internal-text %))
-                     (string/trim (string/replace % #"\s" " ")))
-                  artist-page)]
-    (print (trim-paragraph text))
+  [artist-tables]
+  (doseq [table artist-tables]
+    (let [artist-section (:content table)
+          text (map #(if (:type %)
+                       (trim-paragraph (get-internal-text %))
+                       (string/trim (string/replace % #"\s" " ")))
+                    artist-section)]
+      (print (trim-paragraph text))
+      (print "\n"))
     (print "\n")))
+
+(defn print-ratings
+  [rating-table]
+  (doseq [rating rating-table] (println "RATING" rating)))

@@ -42,10 +42,11 @@
 (defn get-artist-rating
   [page]
   (let [parsed (parse-page page)]
-    (first (s/select (s/descendant (s/and (s/tag :table)
-                                          (s/attr :width #(not (= % "100%"))))
-                                   (s/tag :font))
-                     parsed))))
+    (s/select (s/descendant (s/and (s/tag :table)
+                                   (s/attr :width #(not (= % "100%"))))
+                            (s/and (s/tag :td) s/first-child)
+                            (s/tag :font))
+              parsed)))
 
 (defn get-section-headers
   [table]

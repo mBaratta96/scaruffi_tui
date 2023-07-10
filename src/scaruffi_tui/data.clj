@@ -1,26 +1,23 @@
 (ns scaruffi-tui.data)
 
-(def ^:private ^:const GET-PAGE-HEADERS-METHODS
-  {:no-index (fn [page] (filter #(or (= :h4 (:tag %)) (= :i (:tag %))) page)),
-   :index (fn [page]
-            (filter #(or (= :h4 (:tag (second %))) (= :i (:tag (second %))))
-                    page))})
+(def is-header?
+  (fn [page-section]
+    (or (= :h4 (:tag page-section)) (= :i (:tag page-section)))))
 
-(defn get-page-headers
-  ([page] ((get GET-PAGE-HEADERS-METHODS :no-index) page))
-  ([page method] ((get GET-PAGE-HEADERS-METHODS method) page)))
+(def is-paragraph?
+  (fn [page-section]
+    (and (= :p (:tag page-section))
+         (some? (:content page-section))
+         (> (count (:content page-section)) 1))))
 
 (defn get-upper-bound [bounds el] (last (filter #(< % el) bounds)))
 
 (defn create-section
   [page]
   (let [indexed-page (map-indexed vector page)
-        bounds (map #(first %) (get-page-headers indexed-page :index))
-        paragraphs (filter #(and (= :p (:tag (second %)))
-                                 (some? (:content (second %)))
-                                 (> (count (:content (second %))) 1))
-                           indexed-page)]
-    (partition-by #(get-upper-bound bounds (first %)) paragraphs)))
+        bound-indexes (map first (filter #(is-header? (second %)) indexed-page))
+        paragraphs (filter #(is-paragraph? (second %)) indexed-page)]
+    (partition-by #(get-upper-bound bound-indexes (first %)) paragraphs)))
 
 (defn get-own-text
   [el]

@@ -34,7 +34,7 @@
 
 (defn get-internal-text
   [el]
-  (let [content (:content (second el))]
+  (let [content (:content el)]
     (string/trim-newline (string/join
                           " "
                           (map #(if (and (:type %) (some? (:content %)))
@@ -47,13 +47,16 @@
 
 (defn get-links
   [el]
-  (let [content (:content (second el))
+  (let [content (:content el)
         links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
-                      content)
-        name-links (for [c links]
-                     {:name ((:band-name COLOR-TYPES) (first (:content c))),
-                      :link (str BASE-URL (subs (:href (:attrs c)) 2))})
-        formatter (columns/format-columns
+                      content)]
+    (for [content links]
+      {:name ((:band-name COLOR-TYPES) (first (:content content))),
+       :link (str BASE-URL (subs (:href (:attrs content)) 2))})))
+
+(defn print-links
+  [name-links]
+  (let [formatter (columns/format-columns
                    [:right (columns/max-value-length name-links :name)]
                    ": "
                    [:left (columns/max-value-length name-links :link)])]
@@ -81,8 +84,11 @@
 
 (defn print-paragraphs
   [paragraphs]
-  (doseq [parapgraph paragraphs]
-    (let [full-text (get-internal-text parapgraph)]
+  (doseq [paragraph paragraphs]
+    (let [full-text (get-internal-text paragraph)
+          name-link (get-links paragraph)]
       (println full-text)
-      (get-links parapgraph)
-      (print "\n"))))
+      (print-links name-link)
+      (print "\n")))
+  (let [links (flatten (map get-links paragraphs))]
+    (println (map :name links))))

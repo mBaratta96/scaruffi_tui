@@ -21,7 +21,7 @@
 (defn navigate-page
   [page]
   (let [content (scraper/get-chapter page)
-        headers (data/get-page-headers content)
+        headers (filter data/is-header? content)
         sections (data/create-section content)]
     (cli/print-options headers)
     (let [index (cli/check-input (count headers))
@@ -29,7 +29,7 @@
           header (nth headers index)]
       (cli/clear-console)
       (cli/print-header header)
-      (cli/print-paragraphs section))))
+      (cli/print-paragraphs (map second section)))))
 
 (defn -main
   ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))

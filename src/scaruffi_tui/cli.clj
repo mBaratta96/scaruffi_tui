@@ -13,6 +13,14 @@
       (cond (not (and (integer? in) (< in row-length))) (recur)
             :else in))))
 
+(defn ask-continuation
+  []
+  (loop []
+    (println "Do you wish to check the artist? [y/n]")
+    (let [in (read-line)]
+      (cond (not (or (= in "y") (= in "n"))) (recur)
+            :else in))))
+
 (def ^:private ^:const COLOR-TYPES
   {:link (fn [s] (compose [:blue.underlined s])),
    :song (fn [s] (compose [:green.italic s])),
@@ -24,24 +32,26 @@
                   (compose [:bold s])))})
 
 (defn color-text
-  [el]
-  (let [tag (:tag el)
-        content (string/trim (first (:content el)))]
+  [el tag]
+  (let [content (string/trim (string/replace el #"\s" " "))]
     (cond (= :a tag) ((:link COLOR-TYPES) content)
           (= :i tag) ((:song COLOR-TYPES) content)
           (= :b tag) ((:album COLOR-TYPES) content)
+          (= :p tag) content
           :else "")))
 
+(defn trim-paragraph
+  [paragraph]
+  (string/trim-newline (string/join " " paragraph)))
+
 (defn get-internal-text
-  [el]
-  (let [content (:content el)]
-    (string/trim-newline (string/join
-                          " "
-                          (map #(if (and (:type %) (some? (:content %)))
-                                  (color-text %)
-                                  (string/trim (string/replace % #"\s" " ")))
-                               (filter #(not (and (:type %) (nil? (:content %))))
-                                       content))))))
+  [paragraph]
+  (let [content (:content paragraph)]
+    ;(println content)
+    (map #(if (and (:type %) (some? (:content %)))
+            (color-text (first (:content %)) (:tag %))
+            (color-text % (:tag paragraph)))
+         (filter #(not (and (:type %) (nil? (:content %)))) content))))
 
 (def ^:private ^:const BASE-URL "https://scaruffi.com")
 
@@ -55,8 +65,9 @@
        :link (str BASE-URL (subs (:href (:attrs content)) 2))})))
 
 (defn print-links
-  [name-links]
-  (let [formatter (columns/format-columns
+  [paragraph]
+  (let [name-links (get-links paragraph)
+        formatter (columns/format-columns
                    [:right (columns/max-value-length name-links :name)]
                    ": "
                    [:left (columns/max-value-length name-links :link)])]
@@ -85,10 +96,21 @@
 (defn print-paragraphs
   [paragraphs]
   (doseq [paragraph paragraphs]
-    (let [full-text (get-internal-text paragraph)
-          name-link (get-links paragraph)]
-      (println full-text)
-      (print-links name-link)
-      (print "\n")))
-  (let [links (flatten (map get-links paragraphs))]
-    (println (map :name links))))
+    (println (trim-paragraph (get-internal-text paragraph)))
+    (print-links paragraph)
+    (print "\n"))
+  (flatten (map get-links paragraphs)))
+
+(defn print-names
+  [names-links]
+  (doseq [[i name] (map-indexed vector (map :name names-links))]
+    (println ((:option COLOR-TYPES) i name))))
+
+(defn print-artist
+  [artist-page]
+  (let [text (map #(if (:type %)
+                     (trim-paragraph (get-internal-text %))
+                     (string/trim (string/replace % #"\s" " ")))
+                  artist-page)]
+    (print (trim-paragraph text))
+    (print "\n")))

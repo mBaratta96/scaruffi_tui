@@ -18,7 +18,7 @@
         (cli/clear-console)
         (scraper/get-link chapter)))))
 
-(defn navigate-page
+(defn navigate-chapter
   [page]
   (let [content (scraper/get-chapter page)
         headers (filter data/is-header? content)
@@ -31,5 +31,24 @@
       (cli/print-header header)
       (cli/print-paragraphs (map second section)))))
 
+(defn get-artists
+  [artist-links]
+  (cli/print-names artist-links)
+  (let [index (cli/check-input (count artist-links))
+        link (:link (nth artist-links index))
+        tables (scraper/get-artist-page-content link)]
+    (doseq [table tables]
+      (cli/print-artist (:content table))
+      (print "\n"))
+    (println link)))
+
+(defn navigate-artists
+  [artist-links]
+  (let [answer (cli/ask-continuation)]
+    (if (= answer "y") (get-artists artist-links))))
+
 (defn -main
-  ([] (let [chapter-page (navigate-home)] (navigate-page chapter-page))))
+  ([]
+   (let [chapter-page (navigate-home)
+         artist-links (navigate-chapter chapter-page)]
+     (navigate-artists artist-links))))

@@ -1,7 +1,8 @@
 (ns scaruffi-tui.scraper
   (:require [clj-http.lite.client :as client]
             [hickory.core :refer [parse as-hickory]]
-            [hickory.select :as s]))
+            [hickory.select :as s]
+            [clojure.string :as string]))
 
 (defn get-page [link] (client/get link))
 
@@ -9,17 +10,34 @@
 
 (defn parse-page
   [page]
-  (-> (get-page page)
+  (-> page
+      get-page
       :body
       parse
       as-hickory))
 
 (defn get-table
   ([page]
-   (first (s/select (s/descendant
-                     (s/and (s/tag :table)
-                            (s/attr :width #(> (Integer/parseInt %) 600))))
-                    (parse-page (str SCARUFFI-URL page))))))
+   (let [parsed (parse-page page)]
+     (first (s/select (s/descendant
+                       (s/and (s/tag :table)
+                              (s/attr :width #(> (Integer/parseInt %) 600))))
+                      parsed))))
+  ([page base-url] (get-table (str base-url page))))
+
+(defn get-artist-table
+  [page]
+  (let [parsed (parse-page page)]
+    (s/select (s/descendant (s/and (s/tag :table) (s/attr :width #(= % "100%")))
+                            (s/and (s/tag :td)
+                                   (s/attr :width #(= % "50%"))
+                                   (s/not (s/has-descendant
+                                           (s/and (s/tag :a)
+                                                  (s/attr :href
+                                                          #(string/includes?
+                                                            %
+                                                            "translate")))))))
+              parsed)))
 
 (defn get-section-headers
   [table]
@@ -46,6 +64,11 @@
       first
       get-chapter-headers))
 
+(defn get-artist-page-content
+  [artist-link]
+  (-> artist-link
+      get-artist-table))
+
 (defn get-link
   [el]
   (-> el
@@ -56,12 +79,14 @@
 
 (defn get-homepage-rows
   []
-  (-> SCARUFFI-HOME
+  (-> SCARUFFI-URL
+      (str SCARUFFI-HOME)
       get-table
       get-section-headers))
 
 (defn get-chapter
   [page]
-  (-> page
+  (-> SCARUFFI-URL
+      (str page)
       get-table
       get-page-content))

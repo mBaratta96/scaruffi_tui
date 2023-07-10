@@ -39,6 +39,14 @@
                                                             "translate")))))))
               parsed)))
 
+(defn get-artist-rating
+  [page]
+  (let [parsed (parse-page page)]
+    (first (s/select (s/descendant (s/and (s/tag :table)
+                                          (s/attr :width #(not (= % "100%"))))
+                                   (s/tag :font))
+                     parsed))))
+
 (defn get-section-headers
   [table]
   (s/select (s/and (s/descendant (s/tag :li)) (s/has-child (s/tag :ol))) table))
@@ -68,6 +76,11 @@
   [artist-link]
   (-> artist-link
       get-artist-table))
+
+(defn get-artist-ratingss
+  [artist-link]
+  (-> artist-link
+      get-artist-rating))
 
 (defn get-link
   [el]

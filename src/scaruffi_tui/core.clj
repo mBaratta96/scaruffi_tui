@@ -36,11 +36,13 @@
   (cli/print-names artist-links)
   (let [index (cli/check-input (count artist-links))
         link (:link (nth artist-links index))
-        tables (scraper/get-artist-page-content link)]
+        tables (scraper/get-artist-page-content link)
+        ratings (scraper/get-artist-rating link)]
     (doseq [table tables]
       (cli/print-artist (:content table))
       (print "\n"))
-    (println link)))
+    (println link)
+    (cli/print-artist (:content ratings))))
 
 (defn navigate-artists
   [artist-links]

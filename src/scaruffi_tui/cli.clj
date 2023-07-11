@@ -1,9 +1,7 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [io.aviso.columns :as columns]
-            [io.aviso.ansi :refer [compose]]
-            [scaruffi-tui.data :as data]))
+            [io.aviso.ansi :refer [compose]]))
 
 (defn check-input
   [row-length]
@@ -11,6 +9,14 @@
     (println "Enter your input:")
     (let [in (edn/read-string (read-line))]
       (cond (not (and (integer? in) (< in row-length))) (recur)
+            :else in))))
+
+(defn ask-continuation
+  []
+  (loop []
+    (println "Do you wish to check the artist? [y/n]")
+    (let [in (read-line)]
+      (cond (not (or (= in "y") (= in "n"))) (recur)
             :else in))))
 
 (def ^:private ^:const COLOR-TYPES
@@ -24,51 +30,37 @@
                   (compose [:bold s])))})
 
 (defn color-text
-  [el]
-  (let [tag (:tag el)
-        content (string/trim (first (:content el)))]
+  [el tag]
+  (let [content (string/trim (string/replace el #"\s" " "))]
     (cond (= :a tag) ((:link COLOR-TYPES) content)
           (= :i tag) ((:song COLOR-TYPES) content)
           (= :b tag) ((:album COLOR-TYPES) content)
+          (= :h tag) ((:header COLOR-TYPES) content)
+          (= :band-name tag) ((:band-name COLOR-TYPES) content)
+          (= :p tag) content
           :else "")))
 
+(defn trim-paragraph
+  [paragraph]
+  (string/trim (string/trim-newline (string/join " " paragraph))))
+
 (defn get-internal-text
-  [el]
-  (let [content (:content (second el))]
-    (string/trim-newline (string/join
-                          " "
-                          (map #(if (and (:type %) (some? (:content %)))
-                                  (color-text %)
-                                  (string/trim (string/replace % #"\s" " ")))
-                               (filter #(not (and (:type %) (nil? (:content %))))
-                                       content))))))
-
-(def ^:private ^:const BASE-URL "https://scaruffi.com")
-
-(defn get-links
-  [el]
-  (let [content (:content (second el))
-        links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
-                      content)
-        name-links (for [c links]
-                     {:name ((:band-name COLOR-TYPES) (first (:content c))),
-                      :link (str BASE-URL (subs (:href (:attrs c)) 2))})
-        formatter (columns/format-columns
-                   [:right (columns/max-value-length name-links :name)]
-                   ": "
-                   [:left (columns/max-value-length name-links :link)])]
-    (columns/write-rows formatter [:name :link] name-links)))
+  [paragraph]
+  (let [content (:content paragraph)]
+    (map #(if (and (:type %) (some? (:content %)))
+            (color-text (first (:content %)) (:tag %))
+            (color-text % (:tag paragraph)))
+         (filter #(not (and (:type %) (nil? (:content %)))) content))))
 
 (defn clear-console [] (print "\033\143"))
 
-(defn print-header
-  [header]
-  (let [header-string (-> header
-                          data/get-own-text
-                          string/trim
-                          string/upper-case)]
-    (println ((:header COLOR-TYPES) header-string))
-    "\n"))
+(defn get-own-text
+  [el]
+  (if (:content el)
+    (-> el
+        :content
+        first)
+    el))
 
 (defn print-options
   [rows]
@@ -76,13 +68,5 @@
     (println ((:option COLOR-TYPES)
               i
               (-> row
-                  data/get-own-text
+                  get-own-text
                   string/trim)))))
-
-(defn print-paragraphs
-  [paragraphs]
-  (doseq [parapgraph paragraphs]
-    (let [full-text (get-internal-text parapgraph)]
-      (println full-text)
-      (get-links parapgraph)
-      (print "\n"))))

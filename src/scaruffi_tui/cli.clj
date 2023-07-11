@@ -37,6 +37,8 @@
     (cond (= :a tag) ((:link COLOR-TYPES) content)
           (= :i tag) ((:song COLOR-TYPES) content)
           (= :b tag) ((:album COLOR-TYPES) content)
+          (= :h tag) ((:header COLOR-TYPES) content)
+          (= :band-name tag) ((:band-name COLOR-TYPES) content)
           (= :p tag) content
           :else "")))
 
@@ -83,13 +85,21 @@
     (println ((:header COLOR-TYPES) header-string))
     "\n"))
 
+(defn get-own-text
+  [el]
+  (if (:content el)
+    (-> el
+        :content
+        first)
+    el))
+
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
     (println ((:option COLOR-TYPES)
               i
               (-> row
-                  data/get-own-text
+                  get-own-text
                   string/trim)))))
 
 (defn print-paragraphs

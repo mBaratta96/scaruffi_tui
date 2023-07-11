@@ -2,47 +2,49 @@
   (:gen-class)
   (:require [scaruffi-tui.scraper :as scraper]
             [scaruffi-tui.cli :as cli]
-            [scaruffi-tui.data :as data]))
+            [scaruffi-tui.home :as home]
+            [scaruffi-tui.artist :as artist]
+            [scaruffi-tui.chapter :as chapter]))
 
 (set! *warn-on-reflection* true)
 
 (defn navigate-home
   []
-  (let [rows (scraper/get-homepage-rows)
-        sections (scraper/get-rows-content rows)]
+  (let [rows (home/get-home)
+        sections (home/get-rows-content rows)]
     (cli/print-options rows)
     (let [section (nth sections (cli/check-input (count rows)))]
       (cli/clear-console)
       (cli/print-options section)
       (let [chapter (nth section (cli/check-input (count section)))]
         (cli/clear-console)
-        (scraper/get-link chapter)))))
+        (home/get-link chapter)))))
 
 (defn navigate-chapter
   [page]
-  (let [content (scraper/get-chapter page)
-        headers (filter data/is-header? content)
-        sections (data/create-section content)]
+  (let [content (chapter/get-chapter page)
+        headers (chapter/filter-headers content)
+        sections (chapter/create-section content)]
     (cli/print-options headers)
     (let [index (cli/check-input (count headers))
           section (nth sections index)
           header (nth headers index)]
       (cli/clear-console)
-      (cli/print-header header)
-      (cli/print-paragraphs (map second section)))))
+      (chapter/print-header header)
+      (chapter/print-paragraphs (map second section)))))
 
 (defn get-artists
   [artist-links]
   (cli/clear-console)
-  (cli/print-names artist-links)
+  (cli/print-options (vec (map :name artist-links)))
   (let [index (cli/check-input (count artist-links))
         link (:link (nth artist-links index))
-        tables (scraper/get-artist-page-content link)
-        ratings (scraper/get-artist-ratings link)]
+        tables (artist/get-artist-page-content link)
+        ratings (artist/get-artist-ratings link)]
     (cli/clear-console)
-    (cli/print-artist tables)
+    (artist/print-artist tables)
     (println link "\n")
-    (println (cli/print-ratings (:content ratings)))))
+    (println (artist/print-ratings (:content ratings)))))
 
 (defn navigate-artists
   [artist-links]

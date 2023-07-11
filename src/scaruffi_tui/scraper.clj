@@ -17,13 +17,11 @@
       as-hickory))
 
 (defn get-table
-  ([page]
-   (let [parsed (parse-page page)]
-     (first (s/select (s/descendant
-                       (s/and (s/tag :table)
-                              (s/attr :width #(> (Integer/parseInt %) 600))))
-                      parsed))))
-  ([page base-url] (get-table (str base-url page))))
+  ([parsed-table]
+   (first (s/select (s/descendant
+                     (s/and (s/tag :table)
+                            (s/attr :width #(> (Integer/parseInt %) 600))))
+                    parsed-table))))
 
 (defn get-artist-table
   [page]

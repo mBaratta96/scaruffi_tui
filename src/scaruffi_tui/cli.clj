@@ -1,9 +1,7 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [io.aviso.columns :as columns]
-            [io.aviso.ansi :refer [compose]]
-            [scaruffi-tui.data :as data]))
+            [io.aviso.ansi :refer [compose]]))
 
 (defn check-input
   [row-length]
@@ -54,36 +52,7 @@
             (color-text % (:tag paragraph)))
          (filter #(not (and (:type %) (nil? (:content %)))) content))))
 
-(def ^:private ^:const BASE-URL "https://scaruffi.com")
-
-(defn get-links
-  [el]
-  (let [content (:content el)
-        links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
-                      content)]
-    (for [content links]
-      {:name ((:band-name COLOR-TYPES) (first (:content content))),
-       :link (str BASE-URL (subs (:href (:attrs content)) 2))})))
-
-(defn print-links
-  [paragraph]
-  (let [name-links (get-links paragraph)
-        formatter (columns/format-columns
-                   [:right (columns/max-value-length name-links :name)]
-                   ": "
-                   [:left (columns/max-value-length name-links :link)])]
-    (columns/write-rows formatter [:name :link] name-links)))
-
 (defn clear-console [] (print "\033\143"))
-
-(defn print-header
-  [header]
-  (let [header-string (-> header
-                          data/get-own-text
-                          string/trim
-                          string/upper-case)]
-    (println ((:header COLOR-TYPES) header-string))
-    "\n"))
 
 (defn get-own-text
   [el]
@@ -101,39 +70,3 @@
               (-> row
                   get-own-text
                   string/trim)))))
-
-(defn print-paragraphs
-  [paragraphs]
-  (doseq [paragraph paragraphs]
-    (println (trim-paragraph (get-internal-text paragraph)))
-    (print-links paragraph)
-    (print "\n"))
-  (flatten (map get-links paragraphs)))
-
-(defn print-names
-  [names-links]
-  (doseq [[i name] (map-indexed vector (map :name names-links))]
-    (println ((:option COLOR-TYPES) i name))))
-
-(defn print-artist
-  [artist-tables]
-  (doseq [table artist-tables]
-    (let [artist-section (:content table)
-          text (map #(if (:type %)
-                       (trim-paragraph (get-internal-text %))
-                       (string/trim (string/replace % #"\s" " ")))
-                    artist-section)]
-      (print (trim-paragraph text))
-      (print "\n"))
-    (print "\n")))
-
-(defn print-ratings
-  [rating-table]
-  (let [ratings (filter #(or (:type %)
-                             (> (count (string/trim (string/trim-newline %)))
-                                0))
-                        rating-table)]
-    (map #(if (:type %)
-            (trim-paragraph (get-internal-text %))
-            (str (string/trim (string/replace % #"\s" " ")) "\n"))
-         ratings)))

@@ -1,7 +1,6 @@
 (ns scaruffi-tui.core
   (:gen-class)
-  (:require [scaruffi-tui.scraper :as scraper]
-            [scaruffi-tui.cli :as cli]
+  (:require [scaruffi-tui.cli :as cli]
             [scaruffi-tui.home :as home]
             [scaruffi-tui.artist :as artist]
             [scaruffi-tui.chapter :as chapter]))

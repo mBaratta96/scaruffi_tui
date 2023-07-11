@@ -43,12 +43,12 @@
     (cli/clear-console)
     (artist/print-artist tables)
     (println link "\n")
-    (println (artist/print-ratings (:content ratings)))))
+    (artist/print-ratings (:content ratings))))
 
 (defn navigate-artists
   [artist-links]
   (let [answer (cli/ask-continuation)]
-    (if (= answer "y") (get-artists artist-links))))
+    (when (= answer "y") (get-artists artist-links))))
 
 (defn -main
   ([]

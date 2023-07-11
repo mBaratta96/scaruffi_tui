@@ -6,15 +6,16 @@
 
 (defn- get-artist-table
   [parsed-page]
-  (s/select (s/descendant (s/and (s/tag :table) (s/attr :width #(= % "100%")))
-                          (s/and (s/tag :td)
-                                 (s/attr :width #(= % "50%"))
-                                 (s/not (s/has-descendant
-                                         (s/and (s/tag :a)
-                                                (s/attr :href
-                                                        #(string/includes?
-                                                          %
-                                                          "translate")))))))
+  (s/select (s/descendant
+             (s/and (s/tag :table)
+                    (s/attr :width #(or (= % "100%") (> (bigint %) 610)))
+                    (s/attr :cellpadding #(not (= % "10"))))
+             (s/and (s/tag :td)
+                    (s/not (s/has-descendant
+                            (s/and (s/tag :a)
+                                   (s/attr
+                                    :href
+                                    #(string/includes? % "translate")))))))
             parsed-page))
 
 (defn- get-artist-rating-table
@@ -54,8 +55,9 @@
   (let [ratings (filter #(or (:type %)
                              (> (count (string/trim (string/trim-newline %)))
                                 0))
-                        rating-table)]
-    (map #(if (:type %)
-            (cli/trim-paragraph (cli/get-internal-text %))
-            (str (string/trim (string/replace % #"\s" " ")) "\n"))
-         ratings)))
+                        rating-table)
+        formatted (map #(if (:type %)
+                          (cli/trim-paragraph (cli/get-internal-text %))
+                          (str (string/trim (string/replace % #"\s" " ")) "\n"))
+                       ratings)]
+    (doseq [rating formatted] (print rating))))

@@ -42,12 +42,11 @@
 
 (defn trim-paragraph
   [paragraph]
-  (string/trim-newline (string/join " " paragraph)))
+  (string/trim (string/trim-newline (string/join " " paragraph))))
 
 (defn get-internal-text
   [paragraph]
   (let [content (:content paragraph)]
-    ;(println content)
     (map #(if (and (:type %) (some? (:content %)))
             (color-text (first (:content %)) (:tag %))
             (color-text % (:tag paragraph)))
@@ -120,4 +119,11 @@
 
 (defn print-ratings
   [rating-table]
-  (doseq [rating rating-table] (println "RATING" rating)))
+  (let [ratings (filter #(or (:type %)
+                             (> (count (string/trim (string/trim-newline %)))
+                                0))
+                        rating-table)]
+    (map #(if (:type %)
+            (trim-paragraph (get-internal-text %))
+            (str (string/trim (string/replace % #"\s" " ")) "\n"))
+         ratings)))

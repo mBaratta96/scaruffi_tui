@@ -38,11 +38,11 @@
   (let [index (cli/check-input (count artist-links))
         link (:link (nth artist-links index))
         tables (scraper/get-artist-page-content link)
-        ratings (scraper/get-artist-rating link)]
+        ratings (scraper/get-artist-ratings link)]
     (cli/clear-console)
     (cli/print-artist tables)
     (println link "\n")
-    (cli/print-artist ratings)))
+    (println (cli/print-ratings (:content ratings)))))
 
 (defn navigate-artists
   [artist-links]

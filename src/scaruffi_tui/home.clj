@@ -6,7 +6,7 @@
 
 (def ^:private ^:const SCARUFFI-HOME "long.html")
 
-(defn get-section-headers
+(defn- get-section-headers
   [table]
   (s/select (s/and (s/descendant (s/tag :li)) (s/has-child (s/tag :ol))) table))
 
@@ -27,4 +27,3 @@
   (-> el
       :attrs
       :href))
-

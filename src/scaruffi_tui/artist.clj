@@ -4,7 +4,7 @@
             [scaruffi-tui.cli :as cli]
             [scaruffi-tui.scraper :as scraper]))
 
-(defn get-artist-table
+(defn- get-artist-table
   [parsed-page]
   (s/select (s/descendant (s/and (s/tag :table) (s/attr :width #(= % "100%")))
                           (s/and (s/tag :td)
@@ -17,7 +17,7 @@
                                                           "translate")))))))
             parsed-page))
 
-(defn get-artist-rating-table
+(defn- get-artist-rating-table
   [parsed-page]
   (first (s/select (s/descendant (s/and (s/tag :table)
                                         (s/attr :width #(not (= % "100%"))))

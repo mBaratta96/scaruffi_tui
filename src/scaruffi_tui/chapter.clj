@@ -9,11 +9,11 @@
 
 (def ^:private ^:const BASE-URL "https://scaruffi.com")
 
-(def is-header?
+(def ^:private is-header?
   (fn [page-section]
     (or (= :h4 (:tag page-section)) (= :i (:tag page-section)))))
 
-(def is-paragraph?
+(def ^:private is-paragraph?
   (fn [page-section]
     (and (= :p (:tag page-section))
          (some? (:content page-section))
@@ -21,7 +21,7 @@
 
 (defn filter-headers [content] (filter is-header? content))
 
-(defn get-upper-bound [bounds el] (last (filter #(< % el) bounds)))
+(defn- get-upper-bound [bounds el] (last (filter #(< % el) bounds)))
 
 (defn create-section
   [page]
@@ -38,7 +38,7 @@
                   (s/descendant (s/tag :p)))
             table))
 
-(defn get-page-content
+(defn- get-page-content
   [table]
   (-> (s/select (s/descendant (s/and (s/tag :dir)
                                      (s/not (s/has-child (s/tag :dir)))
@@ -65,7 +65,7 @@
     (println (cli/color-text header-string :h))
     "\n"))
 
-(defn get-links
+(defn- get-links
   [el]
   (let [content (:content el)
         links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
@@ -74,7 +74,7 @@
       {:name (cli/color-text (first (:content content)) :band-name),
        :link (str BASE-URL (subs (:href (:attrs content)) 2))})))
 
-(defn print-links
+(defn- print-links
   [paragraph]
   (let [name-links (get-links paragraph)
         formatter (columns/format-columns

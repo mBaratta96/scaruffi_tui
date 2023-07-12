@@ -38,8 +38,7 @@
   (cli/print-options (vec (map :name artist-links)))
   (let [index (cli/check-input (count artist-links))
         link (:link (nth artist-links index))
-        tables (artist/get-artist-page-content link)
-        ratings (artist/get-artist-ratings link)]
+        [tables ratings] (artist/get-artist-page-content link)]
     (cli/clear-console)
     (artist/print-artist tables)
     (println link "\n")

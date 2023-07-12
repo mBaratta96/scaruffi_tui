@@ -29,15 +29,8 @@
 
 (defn get-artist-page-content
   [artist-link]
-  (-> artist-link
-      scraper/parse-page
-      get-artist-table))
-
-(defn get-artist-ratings
-  [artist-link]
-  (-> artist-link
-      scraper/parse-page
-      get-artist-rating-table))
+  (let [parsed-page (scraper/parse-page artist-link)]
+    [(get-artist-table parsed-page) (get-artist-rating-table parsed-page)]))
 
 (defn print-artist
   [artist-tables]

@@ -86,7 +86,10 @@
 (defn print-paragraphs
   [paragraphs]
   (doseq [paragraph paragraphs]
-    (println (cli/trim-paragraph (cli/get-internal-text paragraph)))
+    (-> paragraph
+        cli/get-internal-text
+        cli/trim-paragraph
+        cli/format-long-text)
     (print-links paragraph)
     (print "\n"))
   (flatten (map get-links paragraphs)))

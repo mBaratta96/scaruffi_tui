@@ -3,6 +3,21 @@
             [clojure.string :as string]
             [io.aviso.ansi :refer [compose]]))
 
+(def ^:private ^:const MAX-LINE-LEN 120)
+
+(defn format-long-text
+  [text]
+  (let [splitted (string/split text #" ")
+        incremental-word-count (reductions (fn [previous-str-len str]
+                                             (+ previous-str-len (count str) 1))
+                                           0
+                                           splitted)
+        lines-partitions (partition-by
+                          #(quot (second %) MAX-LINE-LEN)
+                          (map vector splitted incremental-word-count))]
+    (doseq [line lines-partitions]
+      (println (string/join " " (map first line))))))
+
 (defn check-input
   [row-length]
   (loop []

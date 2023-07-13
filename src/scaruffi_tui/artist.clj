@@ -40,9 +40,8 @@
                        (cli/trim-paragraph (cli/get-internal-text %))
                        (string/trim (string/replace % #"\s" " ")))
                     artist-section)]
-      (print (cli/trim-paragraph text))
-      (print "\n"))
-    (print "\n")))
+      (cli/format-long-text (cli/trim-paragraph text))
+      (print "\n"))))
 
 (defn print-ratings
   [rating-table]

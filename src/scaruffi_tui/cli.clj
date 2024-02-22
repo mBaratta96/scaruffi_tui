@@ -1,7 +1,8 @@
 (ns scaruffi-tui.cli
   (:require [clojure.edn :as edn]
             [clojure.string :as string]
-            [io.aviso.ansi :refer [compose]]))
+            [clj-commons.ansi :refer [compose]]
+            [clojure.string :as str]))
 
 (def ^:private ^:const MAX-LINE-LEN 120)
 
@@ -35,23 +36,23 @@
             :else in))))
 
 (def ^:private ^:const COLOR-TYPES
-  {:link (fn [s] (compose [:blue.underlined s])),
-   :song (fn [s] (compose [:green.italic s])),
-   :album (fn [s] (compose [:yellow.bold s])),
+  {:a (fn [s] (compose [:blue.underlined s])),
+   :i (fn [s] (compose [:green.italic s])),
+   :b (fn [s] (compose [:yellow.bold s])),
    :band-name (fn [s] (compose [:blue.italic s])),
-   :header (fn [s] (compose [:red.bold s])),
-   :option (fn [index s]
-             (str (compose [:cyan.bold (str index ". ")])
-                  (compose [:bold s])))})
+   :band-name-pad (fn [s]
+                    (compose [{:font :blue.italic, :width 40, :pad :left} s])),
+   :band-link (fn [s] (compose [{:font :italic, :width 50, :pad :right} s])),
+   :h (fn [s] (compose [:red.bold s])),
+   :option (fn [s]
+             (let [[index option] (str/split s #"\." 2)]
+               (str (compose [:cyan.bold (str index ". ")])
+                    (compose [:bold option]))))})
 
 (defn color-text
   [el tag]
   (let [content (string/trim (string/replace el #"\s" " "))]
-    (cond (= :a tag) ((:link COLOR-TYPES) content)
-          (= :i tag) ((:song COLOR-TYPES) content)
-          (= :b tag) ((:album COLOR-TYPES) content)
-          (= :h tag) ((:header COLOR-TYPES) content)
-          (= :band-name tag) ((:band-name COLOR-TYPES) content)
+    (cond (contains? COLOR-TYPES tag) ((tag COLOR-TYPES) content)
           (= :p tag) content
           :else "")))
 
@@ -80,8 +81,4 @@
 (defn print-options
   [rows]
   (doseq [[i row] (map-indexed vector rows)]
-    (println ((:option COLOR-TYPES)
-              i
-              (-> row
-                  get-own-text
-                  string/trim)))))
+    (println (color-text (str i "." (get-own-text row)) :option))))

@@ -13,9 +13,11 @@
       parse
       as-hickory))
 
+;; All the content of a scaruffi.com website is included in a <table>.
+;; Select the table and then process differently according to the page.
 (defn get-table
   ([parsed-table]
    (first (s/select (s/descendant
-                     (s/and (s/tag :table)
-                            (s/attr :width #(> (Integer/parseInt %) 600))))
+                      (s/and (s/tag :table)
+                             (s/attr :width #(> (Integer/parseInt %) 600))))
                     parsed-table))))

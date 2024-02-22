@@ -23,6 +23,10 @@ lein native
 
 Use `lein run` or build it and use `scaruffi_tui`
 
+## To do
+
+- Trim and clean artist page text
+
 ## Screenshots
 
 ![1](./doc/1688471016.png)

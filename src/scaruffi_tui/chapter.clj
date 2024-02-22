@@ -2,8 +2,7 @@
   (:require [clojure.string :as string]
             [hickory.select :as s]
             [scaruffi-tui.scraper :as scraper]
-            [scaruffi-tui.cli :as cli]
-            [io.aviso.columns :as columns]))
+            [scaruffi-tui.cli :as cli]))
 
 (def ^:private ^:const SCARUFFI-URL "https://scaruffi.com/history/")
 
@@ -71,17 +70,16 @@
         links (filter #(and (:type %) (some? (:content %)) (= :a (:tag %)))
                       content)]
     (for [content links]
-      {:name (cli/color-text (first (:content content)) :band-name),
+      {:name (first (:content content)),
        :link (str BASE-URL (subs (:href (:attrs content)) 2))})))
 
 (defn- print-links
   [paragraph]
-  (let [name-links (get-links paragraph)
-        formatter (columns/format-columns
-                   [:right (columns/max-value-length name-links :name)]
-                   ": "
-                   [:left (columns/max-value-length name-links :link)])]
-    (columns/write-rows formatter [:name :link] name-links)))
+  (let [name-links (get-links paragraph)]
+    (doseq [link name-links]
+      (println (str (cli/color-text (:name link) :band-name-pad)
+                    ": "
+                    (cli/color-text (:link link) :band-link))))))
 
 (defn print-paragraphs
   [paragraphs]

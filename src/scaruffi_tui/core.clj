@@ -8,6 +8,7 @@
 (set! *warn-on-reflection* true)
 
 (defn navigate-home
+  ; scrape https://scaruffi.com/history/long.html
   []
   (let [rows (home/get-home)
         sections (home/get-rows-content rows)]

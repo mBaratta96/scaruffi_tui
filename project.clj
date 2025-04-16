@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [hickory "0.7.1"]
                  [org.clj-commons/clj-http-lite "1.0.13"]
-                 [org.clj-commons/pretty "2.2.1"]]
+                 [org.clj-commons/pretty "3.3.2"]]
   :injections [(.. System (setProperty "clj-commons.ansi.enabled" "true"))]
   :main scaruffi-tui.core
   :target-path "target/%s"
